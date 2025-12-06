@@ -9,3 +9,8 @@ coverage/
 *.tsbuildinfo
 .bun/
 .prisma/
+logs/
+*.log
+
+# Docker
+docker-compose.override.yml

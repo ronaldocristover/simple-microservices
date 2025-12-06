@@ -1,31 +1,47 @@
-import prisma from '../db/prisma';
+import prisma, { PrismaExceptionHandler } from '../db/prisma';
 import { Example, Prisma } from '@prisma/client';
-import logger from '../utils/logger';
 
 class ExampleRepository {
     async findAll(): Promise<Example[]> {
-        logger.info('Repository: Fetching all examples from database');
-        return await prisma.example.findMany({
-            orderBy: { createdAt: 'desc' },
-        });
+        try {
+            return await prisma.example.findMany({
+                orderBy: { createdAt: 'desc' },
+            });
+        } catch (error) {
+            if (PrismaExceptionHandler.isPrismaError(error)) {
+                throw error;
+            }
+            throw error;
+        }
     }
 
     async findById(id: number): Promise<Example | null> {
-        logger.info(`Repository: Fetching example with id: ${id}`);
-        return await prisma.example.findUnique({
-            where: { id },
-        });
+        try {
+            return await prisma.example.findUnique({
+                where: { id },
+            });
+        } catch (error) {
+            if (PrismaExceptionHandler.isPrismaError(error)) {
+                throw error;
+            }
+            throw error;
+        }
     }
 
     async create(data: Prisma.ExampleCreateInput): Promise<Example> {
-        logger.info('Repository: Creating example data:', data);
-        return await prisma.example.create({
-            data,
-        });
+        try {
+            return await prisma.example.create({
+                data,
+            });
+        } catch (error) {
+            if (PrismaExceptionHandler.isPrismaError(error)) {
+                throw error;
+            }
+            throw error;
+        }
     }
 
     async update(id: number, data: Prisma.ExampleUpdateInput): Promise<Example | null> {
-        logger.info(`Repository: Updating example with id: ${id}`, data);
         try {
             return await prisma.example.update({
                 where: { id },
@@ -35,12 +51,14 @@ class ExampleRepository {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
                 return null; // Record not found
             }
+            if (PrismaExceptionHandler.isPrismaError(error)) {
+                throw error;
+            }
             throw error;
         }
     }
 
     async delete(id: number): Promise<boolean> {
-        logger.info(`Repository: Deleting example with id: ${id}`);
         try {
             await prisma.example.delete({
                 where: { id },
@@ -49,6 +67,9 @@ class ExampleRepository {
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
                 return false; // Record not found
+            }
+            if (PrismaExceptionHandler.isPrismaError(error)) {
+                throw error;
             }
             throw error;
         }

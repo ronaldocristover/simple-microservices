@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import exampleService from '../services/example.service';
-import logger from '../utils/logger';
 import { RequestHandler } from '../types';
 
 class ExampleController {
   getAll: RequestHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      logger.info('GET /example request received');
       const data = await exampleService.getAll();
       res.status(200).json({
         success: true,
@@ -28,7 +26,6 @@ class ExampleController {
         return;
       }
 
-      logger.info(`GET /example/${id} request received`);
       const data = await exampleService.getById(id);
 
       if (!data) {
@@ -50,7 +47,6 @@ class ExampleController {
 
   create: RequestHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      logger.info('POST /example request received');
       const { title, description } = req.body;
 
       if (!title) {
@@ -86,7 +82,6 @@ class ExampleController {
         return;
       }
 
-      logger.info(`PUT /example/${id} request received`);
       const { title, description } = req.body;
 
       const data = await exampleService.update(id, {
@@ -122,7 +117,6 @@ class ExampleController {
         return;
       }
 
-      logger.info(`DELETE /example/${id} request received`);
       const deleted = await exampleService.delete(id);
 
       if (!deleted) {
@@ -144,4 +138,3 @@ class ExampleController {
 }
 
 export default new ExampleController();
-

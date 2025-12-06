@@ -47,12 +47,14 @@ simple-microservices/
 - ✅ MySQL database support
 - ✅ Modular architecture (routes, controllers, services, middlewares)
 - ✅ Error handling middleware
+- ✅ Winston logger with JSON output for production
 - ✅ Request logging with Morgan
 - ✅ Security headers with Helmet
 - ✅ CORS support
 - ✅ Environment configuration
 - ✅ Health check endpoint
 - ✅ Graceful shutdown with database connection cleanup
+- ✅ Docker support with Docker Compose for easy deployment
 
 ## Prerequisites
 
@@ -109,6 +111,79 @@ bun run start
 ### Build for production (optional - Bun can run TypeScript directly):
 ```bash
 bun run build
+```
+
+## Docker Support
+
+### Using Docker Compose (Recommended)
+
+#### Development Mode:
+```bash
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+#### Production Mode:
+```bash
+docker-compose up --build
+```
+
+#### With custom environment variables:
+Create a `.env` file with:
+```env
+PORT=3000
+NODE_ENV=development
+API_PREFIX=/api/v1
+DB_USER=root
+DB_PASSWORD=password
+DB_NAME=mydb
+DB_PORT=3306
+LOG_LEVEL=debug
+```
+
+Then run:
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
+
+### Using Docker Only
+
+#### Build the image:
+```bash
+docker build -t simple-microservices .
+```
+
+#### Run the container:
+```bash
+docker run -p 3000:3000 \
+  -e DATABASE_URL=mysql://user:password@host:3306/mydb \
+  -e NODE_ENV=production \
+  simple-microservices
+```
+
+### Docker Services
+
+The docker-compose setup includes:
+- **app**: Application service running on port 3000
+- **db**: MySQL 8.0 database service on port 3306
+- Automatic health checks
+- Volume persistence for database data
+- Network isolation
+
+### Useful Docker Commands
+
+```bash
+# Stop services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+
+# View logs
+docker-compose logs -f app
+
+# Execute commands in container
+docker-compose exec app bun run db:migrate
+docker-compose exec app bun run db:seed
 ```
 
 ## API Endpoints
@@ -168,6 +243,7 @@ curl http://localhost:3000/api/v1/health
 - **Push schema**: `bun run db:push` - Push schema changes directly to database (recommended for development)
 - **Create and apply migrations**: `bun run db:migrate` - Create migration files and apply them to database
 - **Open Prisma Studio**: `bun run db:studio` - Open Prisma Studio for database management
+- **Seed database**: `bun run db:seed` - Populate database with initial data
 
 ### Schema Management
 
@@ -197,6 +273,7 @@ To add a new model:
 - **cors**: Cross-Origin Resource Sharing
 - **helmet**: Security headers
 - **morgan**: HTTP request logger
+- **winston**: Production-ready logging library with JSON output
 - **@prisma/client**: Prisma Client for type-safe database access
 
 ## Development Dependencies
@@ -211,4 +288,35 @@ To add a new model:
 ## Runtime
 
 - **Bun**: Fast JavaScript/TypeScript runtime that runs TypeScript natively without compilation step
+
+## Logging
+
+The application uses **Winston** for structured logging:
+
+- **Development mode**: Human-readable colored console output with timestamps
+- **Production mode**: JSON formatted logs for easy parsing by log aggregation tools
+- **Log files** (production only):
+  - `logs/error.log` - Error level logs
+  - `logs/combined.log` - All logs
+  - `logs/exceptions.log` - Unhandled exceptions
+  - `logs/rejections.log` - Unhandled promise rejections
+
+### Environment Variables
+
+- `LOG_LEVEL`: Set logging level (default: `debug` for development, `info` for production)
+  - Options: `error`, `warn`, `info`, `debug`, `verbose`, `silly`
+
+### Log Levels
+
+- **error**: Error messages
+- **warn**: Warning messages
+- **info**: Informational messages
+- **debug**: Debug messages (development only)
+
+Production logs include structured JSON with:
+- Timestamp
+- Log level
+- Message
+- Service name
+- Additional metadata
 
